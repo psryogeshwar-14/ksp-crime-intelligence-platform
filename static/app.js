@@ -39,8 +39,6 @@ document.addEventListener("DOMContentLoaded", () => {
     btnPDFExport: document.getElementById("btnPDFExport"),
     btnThemeToggle: document.getElementById("btnThemeToggle"),
     themeIcon: document.getElementById("themeIcon"),
-    btnVoiceToggle: document.getElementById("btnVoiceToggle"),
-    voiceIcon: document.getElementById("voiceIcon"),
     
     btnLangEn: document.getElementById("btnLangEn"),
     btnLangKn: document.getElementById("btnLangKn"),
@@ -157,12 +155,7 @@ document.addEventListener("DOMContentLoaded", () => {
   }
 
   function speakText(text) {
-    if (!appState.voiceOutput) return;
-    window.speechSynthesis.cancel();
-    
-    const utterance = new SpeechSynthesisUtterance(text);
-    utterance.lang = appState.lang === "KN" ? "kn-IN" : "en-IN";
-    window.speechSynthesis.speak(utterance);
+    return; // Voice synthesis disabled
   }
 
   // --- Initial Data Fetching ---
@@ -1246,15 +1239,6 @@ document.addEventListener("DOMContentLoaded", () => {
     }, 150);
   });
 
-  el.btnVoiceToggle.addEventListener("click", () => {
-    appState.voiceOutput = !appState.voiceOutput;
-    if (appState.voiceOutput) {
-      el.voiceIcon.setAttribute("data-lucide", "volume-2");
-    } else {
-      el.voiceIcon.setAttribute("data-lucide", "volume-x");
-    }
-    lucide.createIcons();
-  });
 
   // --- Translation Dictionary & Interface Localization ---
   function translateUI(lang) {
