@@ -55,6 +55,7 @@ document.addEventListener("DOMContentLoaded", () => {
     // Tables & Filters
     filterDistrict: document.getElementById("filterDistrict"),
     filterType: document.getElementById("filterType"),
+    filterStatus: document.getElementById("filterStatus"),
     tableCrimesBody: document.getElementById("tableCrimesBody"),
     tableAuditLogsBody: document.getElementById("tableAuditLogsBody"),
     tableUpiTrailsBody: document.getElementById("tableUpiTrailsBody"),
@@ -219,6 +220,7 @@ document.addEventListener("DOMContentLoaded", () => {
   function renderCrimesTable() {
     const districtFilter = el.filterDistrict.value;
     const typeFilter = el.filterType.value;
+    const statusFilter = el.filterStatus.value;
     
     let filtered = appState.crimes;
     if (districtFilter) {
@@ -226,6 +228,11 @@ document.addEventListener("DOMContentLoaded", () => {
     }
     if (typeFilter) {
       filtered = filtered.filter(c => c.crime_type === typeFilter);
+    }
+    if (statusFilter === "Solved") {
+      filtered = filtered.filter(c => c.status === "Solved");
+    } else if (statusFilter === "Pending") {
+      filtered = filtered.filter(c => c.status !== "Solved");
     }
     
     el.tableCrimesBody.innerHTML = "";
@@ -1055,8 +1062,21 @@ document.addEventListener("DOMContentLoaded", () => {
   };
 
   function openFirDossier(fir) {
+    let solvedHTML = "";
+    if (fir.status === "Solved") {
+      solvedHTML = `
+        <div style="background-color: rgba(16,185,129,0.06); border: 1px solid rgba(16,185,129,0.2); padding: 1rem; border-radius: 8px; margin-bottom: 0.75rem;">
+          <h4 style="font-size: 0.825rem; font-weight: 700; text-transform: uppercase; color: var(--success-color); margin-bottom: 0.25rem;">Case Resolution Dossier</h4>
+          <div style="font-size: 0.8rem; color: var(--text-secondary); display: flex; flex-direction: column; gap: 0.2rem;">
+            <div><strong>Officer In Charge:</strong> ${fir.solved_by || 'Inspector Kumar (Investigator)'}</div>
+            <div><strong>Status:</strong> Case resolved. Chargesheet successfully filed.</div>
+          </div>
+        </div>
+      `;
+    }
+
     el.firOverlayBody.innerHTML = `
-      <div style="background-color: var(--bg-color); padding: 1.25rem; border-radius: 8px; border: 1px solid var(--border-color); display: flex; flex-direction: column; gap: 0.75rem;">
+      <div style="background-color: var(--bg-color); padding: 1.25rem; border-radius: 8px; border: 1px solid var(--border-color); display: flex; flex-direction: column; gap: 0.75rem; margin-bottom: 0.75rem;">
         <div>
           <span style="font-size: 0.75rem; text-transform: uppercase; color: var(--text-muted); font-weight: 700;">FIR ID Number</span>
           <h4 style="font-size: 1.2rem; font-weight: 800; color: var(--accent-color);">${fir.fir_no}</h4>
@@ -1075,9 +1095,11 @@ document.addEventListener("DOMContentLoaded", () => {
         </div>
       </div>
       
+      ${solvedHTML}
+
       <div>
         <h4 style="font-size: 0.85rem; font-weight: 700; text-transform: uppercase; color: var(--text-secondary); margin-bottom: 0.5rem;">Incident Narrative Log</h4>
-        <p style="font-size: 0.9rem; line-height: 1.6; color: var(--text-secondary); background-color: var(--bg-color); padding: 1rem; border-radius: 8px; border: 1px solid var(--border-color);">
+        <p style="font-size: 0.9rem; line-height: 1.6; color: var(--text-secondary); background-color: var(--bg-color); padding: 1rem; border-radius: 8px; border: 1px solid var(--border-color); margin-bottom: 0.75rem;">
           ${fir.description}
         </p>
       </div>
@@ -1427,9 +1449,19 @@ document.addEventListener("DOMContentLoaded", () => {
       pdfBtnSpan.textContent = lang === "KN" ? "ವರದಿ ಡೌನ್‌ಲೋಡ್ (PDF)" : "Export Investigation PDF";
     }
 
+    // 10. Table Status Filter Options
+    const optAllStatus = document.getElementById("filterOptAllStatus");
+    if (optAllStatus) optAllStatus.textContent = lang === "KN" ? "ಎಲ್ಲಾ ಪ್ರಕರಣಗಳ ಸ್ಥಿತಿ" : "All Case Statuses";
+    const optSolved = document.getElementById("filterOptSolved");
+    if (optSolved) optSolved.textContent = lang === "KN" ? "ಪರಿಹರಿಸಲಾದ ಪ್ರಕರಣಗಳು" : "Solved Only";
+    const optPending = document.getElementById("filterOptPending");
+    if (optPending) optPending.textContent = lang === "KN" ? "ಬಾಕಿ ಇರುವ ಪ್ರಕರಣಗಳು" : "Pending Only";
+
     // Trigger charts redraw if active tab
     if (appState.activeTab === "sectionDashboard") {
       setTimeout(initDashboardCharts, 100);
+    } else if (appState.activeTab === "sectionFinancial") {
+      setTimeout(initSankeyChart, 100);
     }
 
     lucide.createIcons();
@@ -1477,6 +1509,7 @@ document.addEventListener("DOMContentLoaded", () => {
         } else if (targetSection === "sectionPredict") {
           initPredictiveChart();
         } else if (targetSection === "sectionFinancial") {
+          initSankeyChart();
           initUpiNetworkChart();
         }
       }, 100);
@@ -1486,6 +1519,7 @@ document.addEventListener("DOMContentLoaded", () => {
   // --- Filters ---
   el.filterDistrict.addEventListener("change", renderCrimesTable);
   el.filterType.addEventListener("change", renderCrimesTable);
+  el.filterStatus.addEventListener("change", renderCrimesTable);
   
   el.mapFilterDistrict.addEventListener("change", renderMapData);
   el.mapFilterType.addEventListener("change", renderMapData);
@@ -1639,8 +1673,11 @@ document.addEventListener("DOMContentLoaded", () => {
 
   function initSankeyChart() {
     const container = document.getElementById("chartSankey");
-    if (!container || sankeyChartInstance) return;
+    if (!container) return;
 
+    if (sankeyChartInstance) {
+      sankeyChartInstance.dispose();
+    }
     sankeyChartInstance = echarts.init(container);
 
     const option = {
