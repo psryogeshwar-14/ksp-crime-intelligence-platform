@@ -1,6 +1,8 @@
 // KSP Crime Database Platform - Advanced Core Frontend Application Script
 
 document.addEventListener("DOMContentLoaded", () => {
+  const API_BASE = "/server/ksp_api";
+
   // --- Global Application State ---
   let appState = {
     userRole: "Investigator",
@@ -166,22 +168,22 @@ document.addEventListener("DOMContentLoaded", () => {
   // --- Initial Data Fetching ---
   async function fetchAllData() {
     try {
-      const resCrimes = await fetch("/api/crimes?limit=200");
+      const resCrimes = await fetch(API_BASE + "/api/crimes?limit=200");
       appState.crimes = await resCrimes.json();
       
-      const resSuspects = await fetch("/api/suspects");
+      const resSuspects = await fetch(API_BASE + "/api/suspects");
       appState.suspects = await resSuspects.json();
       
-      const resNet = await fetch("/api/network");
+      const resNet = await fetch(API_BASE + "/api/network");
       appState.networkData = await resNet.json();
       
-      const resUpi = await fetch("/api/upi-trails");
+      const resUpi = await fetch(API_BASE + "/api/upi-trails");
       appState.upiTrails = await resUpi.json();
       
-      const resAlerts = await fetch("/api/interstate-alerts");
+      const resAlerts = await fetch(API_BASE + "/api/interstate-alerts");
       appState.interstateAlerts = await resAlerts.json();
       
-      const resSocio = await fetch("/api/socio-economic");
+      const resSocio = await fetch(API_BASE + "/api/socio-economic");
       appState.socioEconomic = await resSocio.json();
       
       await refreshAuditLogs();
@@ -194,7 +196,7 @@ document.addEventListener("DOMContentLoaded", () => {
   }
 
   async function refreshAuditLogs() {
-    const resLogs = await fetch("/api/audit-logs");
+    const resLogs = await fetch(API_BASE + "/api/audit-logs");
     appState.auditLogs = await resLogs.json();
     renderAuditLogsTable();
   }
@@ -827,7 +829,7 @@ document.addEventListener("DOMContentLoaded", () => {
     if (!moText.trim()) return;
     
     try {
-      const response = await fetch("/api/match-mo", {
+      const response = await fetch(API_BASE + "/api/match-mo", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ mo_text: moText })
@@ -1009,7 +1011,7 @@ document.addEventListener("DOMContentLoaded", () => {
     el.chatHistory.scrollTop = el.chatHistory.scrollHeight;
     
     try {
-      const response = await fetch("/api/chat", {
+      const response = await fetch(API_BASE + "/api/chat", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
@@ -1180,7 +1182,7 @@ document.addEventListener("DOMContentLoaded", () => {
     const role = el.loginRole.value;
     
     try {
-      const response = await fetch("/api/login", {
+      const response = await fetch(API_BASE + "/api/login", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ username, password, role })
@@ -1920,7 +1922,7 @@ document.addEventListener("DOMContentLoaded", () => {
     victimsLoaded = true;
 
     try {
-      const res  = await fetch("/api/victims");
+      const res  = await fetch(API_BASE + "/api/victims");
       const victims = await res.json();
 
       // --- KPI Summary Row ---
