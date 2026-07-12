@@ -1,0 +1,756 @@
+<!DOCTYPE html>
+<html lang="en" class="dark">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>KSP Advanced Crime AI & Future India Dashboard</title>
+  
+  <!-- CSS Stylesheets -->
+  <link rel="stylesheet" href="/static/style.css">
+  <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" integrity="sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY=" crossorigin="">
+  
+  <!-- JavaScript CDNs (ECharts, Leaflet, Lucide Icons) -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/echarts/5.4.3/echarts.min.js"></script>
+  <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js" integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo=" crossorigin=""></script>
+  <script src="https://unpkg.com/lucide@latest"></script>
+</head>
+<body>
+
+  <!-- Login Page Overlay -->
+  <div id="loginOverlay" class="login-overlay">
+    <div class="login-card">
+      <div class="login-header">
+        <div style="background-color: var(--accent-color); color: white; width: 48px; height: 48px; border-radius: 12px; display: flex; align-items: center; justify-content: center; margin-bottom: 0.5rem;">
+          <i data-lucide="shield-alert" style="width: 28px; height: 28px;"></i>
+        </div>
+        <h2>KSP Advanced Crime AI</h2>
+        <p>Karnataka State Police Datathon 2026</p>
+      </div>
+      
+      <div class="form-group">
+        <label for="loginRole">Select Operational Access Role</label>
+        <select id="loginRole" class="form-control">
+          <option value="Investigator">Investigator (Standard Dossier View)</option>
+          <option value="Analyst">Crime Analyst (Forecasting & Sociology)</option>
+          <option value="Superintendent">Superintendent (Full Approvals & PDF Export)</option>
+          <option value="Admin">System Administrator (Full Audit Logs & trace)</option>
+        </select>
+      </div>
+      
+      <div class="form-group">
+        <label for="loginUser">Officer Username</label>
+        <input type="text" id="loginUser" class="form-control" placeholder="e.g. ksp_invest">
+      </div>
+      
+      <div class="form-group">
+        <label for="loginPass">Security Password</label>
+        <input type="password" id="loginPass" class="form-control" placeholder="••••••••">
+      </div>
+      
+      <div id="loginError" style="color: var(--error-color); font-size: 0.8rem; display: none;"></div>
+      
+      <button id="btnLogin" class="btn btn-primary" style="width: 100%;">Authenticate Access</button>
+    </div>
+  </div>
+
+  <!-- Primary Application Layout -->
+  <div class="app-container">
+    
+    <!-- Sidebar Navigation -->
+    <aside class="sidebar">
+      <div class="sidebar-logo">
+        <i data-lucide="shield-check" style="color: var(--accent-color); width: 24px; height: 24px;"></i>
+        <span>KSP Crime AI Platform</span>
+      </div>
+      
+      <nav class="nav-links">
+        <div class="nav-item active" data-target="sectionDashboard">
+          <i data-lucide="layout-dashboard"></i>
+          <span>Dashboard</span>
+        </div>
+        <div class="nav-item" data-target="sectionChat">
+          <i data-lucide="message-square"></i>
+          <span>Conversational AI</span>
+        </div>
+        <div class="nav-item" data-target="sectionMap">
+          <i data-lucide="map"></i>
+          <span>Hotspot Map</span>
+        </div>
+        <div class="nav-item" data-target="sectionNetwork">
+          <i data-lucide="git-branch"></i>
+          <span>Criminal Network</span>
+        </div>
+        <div class="nav-item" data-target="sectionFinancial">
+          <i data-lucide="wallet"></i>
+          <span>UPI Money Trails</span>
+          <span class="nav-badge">4</span>
+        </div>
+        <div class="nav-item" data-target="sectionDecision">
+          <i data-lucide="file-search"></i>
+          <span>MO Lead Matcher</span>
+        </div>
+        <div class="nav-item" data-target="sectionVictims">
+          <i data-lucide="heart-handshake"></i>
+          <span>Victim Records</span>
+          <span class="nav-badge" id="victimNavBadge">5</span>
+        </div>
+        <div class="nav-item" data-target="sectionStoryboard">
+          <i data-lucide="layers"></i>
+          <span>Case Storyboard</span>
+        </div>
+        <div class="nav-item" data-target="sectionPredict">
+          <i data-lucide="trending-up"></i>
+          <span>Predictive Risk</span>
+        </div>
+        <div class="nav-item" data-target="sectionAudit">
+          <i data-lucide="history"></i>
+          <span>Audit Logs</span>
+          <span class="nav-badge" id="auditBadgeCount">0</span>
+        </div>
+      </nav>
+      
+      <!-- User Profile Box -->
+      <div class="user-profile">
+        <div class="user-info">
+          <div class="user-avatar" id="avatarName">O</div>
+          <div class="user-details">
+            <div class="user-name" id="profileName">Officer</div>
+            <div class="user-role" id="profileRole">Investigator</div>
+          </div>
+        </div>
+        <button class="btn-logout" id="btnLogout" title="Log Out">
+          <i data-lucide="log-out" style="width: 18px; height: 18px;"></i>
+        </button>
+      </div>
+    </aside>
+
+    <!-- Main Content Panel wrapper -->
+    <div class="main-wrapper printable-area">
+
+      <!-- Live Alert Ticker Bar -->
+      <div class="alert-ticker-bar" id="alertTickerBar">
+        <div class="ticker-label">⚡ Live Alerts</div>
+        <div class="ticker-track">
+          <div class="ticker-content" id="tickerContent">
+            <!-- Populated by JS -->
+          </div>
+        </div>
+      </div>
+      
+      <!-- Top Header Row -->
+      <header class="header">
+        <div class="header-title">
+          <h1 id="pageTitle">Dashboard</h1>
+        </div>
+        
+        <div class="header-actions">
+          <!-- Voice Output Toggle -->
+          <button class="btn-icon" id="btnVoiceToggle" title="Toggle Voice Output (TTS)">
+            <i data-lucide="volume-2" id="voiceIcon"></i>
+          </button>
+          
+          <!-- Language Selector -->
+          <div class="segmented-control">
+            <button class="segment-btn active" id="btnLangEn">EN</button>
+            <button class="segment-btn" id="btnLangKn">ಕನ್ನಡ</button>
+          </div>
+          
+          <!-- Dark Mode Toggle -->
+          <button class="btn-icon" id="btnThemeToggle" title="Toggle Dark/Light Mode">
+            <i data-lucide="sun" id="themeIcon"></i>
+          </button>
+          
+          <!-- Export Active View / Investigation PDF -->
+          <button class="btn btn-secondary" id="btnPDFExport">
+            <i data-lucide="download"></i>
+            <span>Export Investigation PDF</span>
+          </button>
+        </div>
+      </header>
+
+      <!-- Dynamic Views Container -->
+      <main class="content-body" id="dynamicViews">
+        
+        <!-- SECTION 1: DASHBOARD -->
+        <section id="sectionDashboard" class="view-section">
+          <!-- Summary Cards Row -->
+          <div class="kpi-grid">
+            <div class="card">
+              <div class="card-header">
+                <span class="card-title">Total Active FIRs</span>
+                <i data-lucide="file-text" class="card-icon"></i>
+              </div>
+              <div class="card-value" id="kpiTotalFirs">179</div>
+              <span class="card-trend trend-up">
+                <i data-lucide="arrow-up-right" style="width: 12px; height: 12px;"></i> +12% this month
+              </span>
+            </div>
+            
+            <div class="card">
+              <div class="card-header">
+                <span class="card-title">Investigation Solved Rate</span>
+                <i data-lucide="check-circle-2" class="card-icon"></i>
+              </div>
+              <div class="card-value" id="kpiSolvedRate">67.8%</div>
+              <span class="card-trend trend-up">
+                <i data-lucide="arrow-up-right" style="width: 12px; height: 12px;"></i> +4.5% year-on-year
+              </span>
+            </div>
+            
+            <div class="card">
+              <div class="card-header">
+                <span class="card-title">Monitored Suspects</span>
+                <i data-lucide="users" class="card-icon"></i>
+              </div>
+              <div class="card-value" id="kpiSuspects">8</div>
+              <span class="card-trend" style="background-color: var(--border-color); color: var(--text-secondary); border: 1px solid var(--border-color);">
+                Active surveillance
+              </span>
+            </div>
+            
+            <div class="card" style="border-left: 4px solid var(--error-color);">
+              <div class="card-header">
+                <span class="card-title">Interstate alerts</span>
+                <i data-lucide="globe" class="card-icon" style="color: var(--error-color);"></i>
+              </div>
+              <div class="card-value" style="color: var(--error-color);" id="kpiInterstateAlerts">3</div>
+              <span class="card-trend trend-down">
+                3 border alerts pending
+              </span>
+            </div>
+          </div>
+          
+          <!-- Dashboard Visual splits -->
+          <div class="dashboard-split">
+            <!-- Left: Trends and Chart analytics -->
+            <div class="split-left">
+              <div class="card" style="flex-grow: 1;">
+                <div class="card-header">
+                  <h3 style="font-weight: 700; font-size: 1rem;">KSP Monthly Crime Distribution Trend</h3>
+                </div>
+                <div id="chartCrimeTrends" class="chart-container"></div>
+              </div>
+            </div>
+            
+            <!-- Right: Crime Category Ratios -->
+            <div class="split-right">
+              <div class="card" style="height: 100%;">
+                <div class="card-header">
+                  <h3 style="font-weight: 700; font-size: 1rem;">Crime Ratios</h3>
+                </div>
+                <div id="chartCrimeCategories" style="height: 400px; width: 100%;"></div>
+              </div>
+            </div>
+          </div>
+          
+          <!-- India for Future: Socio-Economic Correlations Grid -->
+          <div class="card">
+            <div class="card-header">
+              <h3 style="font-weight: 700; font-size: 1rem;">Socio-Economic Crime Correlations (Future India Analytics)</h3>
+              <p style="font-size: 0.8rem; color: var(--text-secondary);">Maps direct correlations between district literacy rates, unemployment, and cyber vs property crimes.</p>
+            </div>
+            <div class="dashboard-split" style="margin-top: 1rem;">
+              <div style="flex-grow: 1; min-width: 0;" id="chartSocioCorrelation" class="chart-container"></div>
+              <div style="width: 300px; display: flex; flex-direction: column; gap: 0.75rem;" id="socioDistrictDescPanel">
+                <!-- Loaded dynamically -->
+              </div>
+            </div>
+          </div>
+          
+          <!-- Recent FIR List Table -->
+          <div class="card">
+            <div class="card-header" style="flex-direction: row; justify-content: space-between;">
+              <h3 style="font-weight: 700; font-size: 1rem;">Recent Incident Reports (FIRs)</h3>
+              <div style="display: flex; gap: 0.5rem;">
+                <select id="filterDistrict" class="form-control" style="width: 150px; padding: 0.35rem;">
+                  <option value="">All Districts</option>
+                  <option value="Bengaluru City">Bengaluru City</option>
+                  <option value="Mysuru">Mysuru</option>
+                  <option value="Hubli-Dharwad">Hubli-Dharwad</option>
+                  <option value="Mangaluru">Mangaluru</option>
+                </select>
+                <select id="filterType" class="form-control" style="width: 150px; padding: 0.35rem;">
+                  <option value="">All Crime Types</option>
+                  <option value="Cybercrime">Cybercrime</option>
+                  <option value="Theft">Theft</option>
+                  <option value="Assault">Assault</option>
+                  <option value="Drug Trafficking">Drug Trafficking</option>
+                </select>
+              </div>
+            </div>
+            <div class="table-container">
+              <table class="custom-table" id="tableCrimes">
+                <thead>
+                  <tr>
+                    <th>FIR Number</th>
+                    <th>Date</th>
+                    <th>District</th>
+                    <th>Police Station</th>
+                    <th>Crime Type</th>
+                    <th>Severity</th>
+                    <th>Status</th>
+                  </tr>
+                </thead>
+                <tbody id="tableCrimesBody">
+                  <!-- Generated Dynamically -->
+                </tbody>
+              </table>
+            </div>
+          </div>
+        </section>
+
+        <!-- SECTION 2: CONVERSATIONAL AI CHAT -->
+        <section id="sectionChat" class="view-section" style="display: none;">
+          <div class="chat-section">
+            
+            <!-- Left Side: Chatbot interface -->
+            <div class="chat-left">
+              <!-- Chat conversation feed -->
+              <div class="chat-history" id="chatHistory">
+                <!-- Message Bubbles -->
+              </div>
+              
+              <!-- Interactive Suggestions Row -->
+              <div class="suggestions-row" id="suggestionsRow">
+                <!-- Suggestions -->
+              </div>
+              
+              <!-- Chat Input Form -->
+              <form id="chatForm" class="chat-input-bar">
+                <!-- Voice Input Toggle Button -->
+                <button type="button" class="btn-icon" id="btnMicInput" title="Voice Typing (English / Kannada)">
+                  <i data-lucide="mic"></i>
+                </button>
+                
+                <div class="chat-input-wrapper">
+                  <textarea id="chatInput" class="chat-textarea" placeholder="Query crime database or suspect profiles..." rows="1"></textarea>
+                  <!-- Send Button -->
+                  <button type="submit" class="btn-send" id="btnChatSend">
+                    <i data-lucide="send" style="width: 14px; height: 14px;"></i>
+                  </button>
+                </div>
+              </form>
+            </div>
+            
+            <!-- Right Side: Explainable AI & Audit inspector panel -->
+            <div class="chat-right">
+              <div class="card" style="padding: 1.25rem;">
+                <h3 style="font-weight: 700; font-size: 0.95rem; display: flex; align-items: center; gap: 0.5rem; color: var(--accent-color);">
+                  <i data-lucide="terminal"></i> Explainable AI Audit Inspector
+                </h3>
+                <p style="font-size: 0.775rem; color: var(--text-secondary); margin-top: 0.25rem;">
+                  Displays query execution details, underlying system reasoning steps, and generated queries.
+                </p>
+              </div>
+              
+              <div class="card" style="flex-grow: 1; gap: 1rem;">
+                <div class="form-group">
+                  <label>Generated Relational Database Query (SQL)</label>
+                  <pre style="background-color: var(--bg-color); border: 1px solid var(--border-color); border-radius: 8px; padding: 0.75rem; font-size: 0.775rem; color: var(--text-secondary); white-space: pre-wrap; word-break: break-all;" id="xaiSqlQuery">N/A</pre>
+                </div>
+                
+                <div class="form-group" style="flex-grow: 1; display: flex; flex-direction: column;">
+                  <label>System Reasoning Stream Logs</label>
+                  <div style="flex-grow: 1; background-color: var(--bg-color); border: 1px solid var(--border-color); border-radius: 8px; padding: 0.75rem; font-family: 'JetBrains Mono', monospace; font-size: 0.725rem; color: var(--text-secondary); overflow-y: auto;" id="xaiReasoningLogs">
+                    <div style="color: var(--text-muted);">Awaiting natural language input query...</div>
+                  </div>
+                </div>
+              </div>
+            </div>
+            
+          </div>
+        </section>
+
+        <!-- SECTION 3: HOTSPOT MAP -->
+        <section id="sectionMap" class="view-section" style="display: none; height: calc(100vh - 120px);">
+          <div class="dashboard-split" style="height: 100%;">
+            <!-- Left: Full Screen Map -->
+            <div class="split-left" style="flex-grow: 1; height: 100%;">
+              <div class="card" style="height: 100%; padding: 0; position: relative;">
+                <div id="mapCrimeHotspots" class="map-container"></div>
+              </div>
+            </div>
+            
+            <!-- Right: Map filter panel -->
+            <div class="split-right" style="height: 100%;">
+              <div class="card" style="height: 100%; gap: 1.25rem;">
+                <h3 style="font-weight: 700; font-size: 1rem;">Geospatial Controls</h3>
+                
+                <div class="form-group">
+                  <label for="mapFilterDistrict">Select District</label>
+                  <select id="mapFilterDistrict" class="form-control">
+                    <option value="">All Karnataka Districts</option>
+                    <option value="Bengaluru City">Bengaluru City</option>
+                    <option value="Mysuru">Mysuru</option>
+                    <option value="Hubli-Dharwad">Hubli-Dharwad</option>
+                    <option value="Mangaluru">Mangaluru</option>
+                  </select>
+                </div>
+                
+                <div class="form-group">
+                  <label for="mapFilterType">Crime Category</label>
+                  <select id="mapFilterType" class="form-control">
+                    <option value="">All Crime Categories</option>
+                    <option value="Cybercrime">Cybercrime</option>
+                    <option value="Theft">Theft</option>
+                    <option value="Assault">Assault</option>
+                    <option value="Drug Trafficking">Drug Trafficking</option>
+                  </select>
+                </div>
+                
+                <div class="form-group">
+                  <label for="mapDensityToggle">Visual Presentation</label>
+                  <select id="mapDensityToggle" class="form-control">
+                    <option value="markers">Incident Pin Markers</option>
+                    <option value="heat">Hotspot Density Clusters (HeatCircles)</option>
+                  </select>
+                </div>
+                
+                <div style="flex-grow: 1; border-top: 1px solid var(--border-color); padding-top: 1rem; overflow-y: auto;">
+                  <h4 style="font-size: 0.825rem; font-weight: 700; text-transform: uppercase; color: var(--text-secondary); margin-bottom: 0.5rem;">District Summary Metrics</h4>
+                  <div id="mapDistrictMetrics" style="display: flex; flex-direction: column; gap: 0.75rem; font-size: 0.85rem;">
+                    <!-- Populated dynamically -->
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </section>
+
+        <!-- SECTION 4: CRIMINAL NETWORK -->
+        <section id="sectionNetwork" class="view-section" style="display: none;">
+          <div class="dashboard-split">
+            <!-- Left: Graph network panel -->
+            <div class="split-left" style="flex-grow: 1;">
+              <div class="card">
+                <div class="card-header">
+                  <h3 style="font-weight: 700; font-size: 1rem;">Force-Directed Associate & Asset Links</h3>
+                </div>
+                <div id="chartNetwork" class="large-chart-container"></div>
+              </div>
+            </div>
+            
+            <!-- Right: Node inspector details -->
+            <div class="split-right">
+              <div class="card" style="height: 100%; gap: 1rem;" id="networkDetailsPanel">
+                <div style="text-align: center; padding: 2rem 1rem; color: var(--text-muted);" id="networkEmptyState">
+                  <i data-lucide="info" style="width: 32px; height: 32px; margin-bottom: 0.5rem;"></i>
+                  <p>Click on any node in the connection network to inspect dossier files, links, and transaction logs.</p>
+                </div>
+                
+                <div id="networkNodeInfo" style="display: none; flex-direction: column; gap: 1.25rem;">
+                  <div class="detail-header" style="justify-content: flex-start; gap: 0.75rem;">
+                    <div style="background-color: var(--accent-color); color: white; width: 40px; height: 40px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-weight: bold; font-size: 1.1rem;" id="networkAvatar">R</div>
+                    <div>
+                      <h4 style="font-size: 0.95rem; font-weight: 700;" id="networkName">Ravi Kumar</h4>
+                      <span id="networkNodeBadge" class="badge high">Risk: 85</span>
+                    </div>
+                  </div>
+                  
+                  <div style="display: flex; flex-direction: column; gap: 0.5rem; font-size: 0.85rem;">
+                    <div style="display: flex; justify-content: space-between; border-bottom: 1px solid var(--border-color); padding-bottom: 0.4rem;">
+                      <span style="color: var(--text-secondary);">Age</span>
+                      <strong id="networkAge">34</strong>
+                    </div>
+                    <div style="display: flex; justify-content: space-between; border-bottom: 1px solid var(--border-color); padding-bottom: 0.4rem;">
+                      <span style="color: var(--text-secondary);">Primary Crime Category</span>
+                      <strong id="networkCrime">Theft</strong>
+                    </div>
+                    <div style="display: flex; justify-content: space-between; border-bottom: 1px solid var(--border-color); padding-bottom: 0.4rem;">
+                      <span style="color: var(--text-secondary);">Surveillance Status</span>
+                      <strong id="networkStatus">Active</strong>
+                    </div>
+                    <div style="display: flex; justify-content: space-between; border-bottom: 1px solid var(--border-color); padding-bottom: 0.4rem;">
+                      <span style="color: var(--text-secondary);">Linked Assets</span>
+                      <strong id="networkAssets">KA-01-MJ-2041</strong>
+                    </div>
+                  </div>
+                  
+                  <div>
+                    <h5 style="font-size: 0.8rem; font-weight: 700; text-transform: uppercase; color: var(--text-secondary); margin-bottom: 0.5rem;">Associated Links</h5>
+                    <div style="display: flex; flex-direction: column; gap: 0.5rem;" id="networkAssociationsList">
+                      <!-- Dynamic -->
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </section>
+
+        <!-- SECTION 5: UPI FINANCIAL TRAILS -->
+        <section id="sectionFinancial" class="view-section" style="display: none;">
+          <div class="card">
+            <div class="card-header">
+              <h3 style="font-weight: 700; font-size: 1rem;">Flagged UPI Money Trails & Phishing Cash-outs</h3>
+              <p style="font-size: 0.8rem; color: var(--text-secondary);">Tracks dynamic UPI transactions mapping shell bank accounts and money transfers linking active suspects.</p>
+            </div>
+            <div class="table-container" style="margin-top: 1rem;">
+              <table class="custom-table">
+                <thead>
+                  <tr>
+                    <th>Transaction ID</th>
+                    <th>Date</th>
+                    <th>Amount</th>
+                    <th>Sender Suspect</th>
+                    <th>Receiver Suspect</th>
+                    <th>Banks Route</th>
+                    <th>Transaction Channel</th>
+                    <th>Risk Classification</th>
+                  </tr>
+                </thead>
+                <tbody id="tableUpiTrailsBody">
+                  <!-- Generated Dynamically -->
+                </tbody>
+              </table>
+            </div>
+          </div>
+          
+          <div class="card" style="margin-top: 2rem;">
+            <div class="card-header">
+              <h3 style="font-weight: 700; font-size: 1rem;">Mule Accounts Intelligence Node Link</h3>
+            </div>
+            <div id="chartUpiNetwork" class="chart-container" style="height: 400px;"></div>
+          </div>
+        </section>
+
+        <!-- SECTION 6: INVESTIGATOR DECISION SUPPORT (MO LEAD MATCHER) -->
+        <section id="sectionDecision" class="view-section" style="display: none;">
+          <div class="dashboard-split">
+            <!-- Left: Modus Operandi lead generation form -->
+            <div class="split-left">
+              <div class="card">
+                <div class="card-header">
+                  <h3 style="font-weight: 700; font-size: 1rem;">Modus Operandi (MO) Lead Matcher</h3>
+                  <p style="font-size: 0.8rem; color: var(--text-secondary);">Enter MO narratives of active crimes to query historical dossiers and identify matching suspects.</p>
+                </div>
+                
+                <div class="form-group" style="margin-top: 1rem;">
+                  <label for="moQueryInput">Modus Operandi Details (e.g. key tools, techniques, target assets)</label>
+                  <textarea id="moQueryInput" class="form-control" rows="3" placeholder="e.g. lock break, daytime house theft, gold snatching..."></textarea>
+                </div>
+                
+                <button class="btn btn-primary" id="btnMatchMo" style="align-self: flex-end; margin-top: 0.5rem;">
+                  <i data-lucide="search"></i> Match MO & Generate Leads
+                </button>
+              </div>
+              
+              <!-- Matches results card -->
+              <div class="card" id="moResultsCard" style="display: none;">
+                <div class="card-header">
+                  <h3 style="font-weight: 700; font-size: 0.95rem;">Matched Criminal Suspects</h3>
+                  <span style="font-size:0.72rem; color:var(--text-muted);">⚠️ Red border = Habitual Offender (Risk ≥ 80)</span>
+                </div>
+                <div id="moMatchesList" style="display: flex; flex-direction: column; gap: 1rem;">
+                  <!-- Dynamic -->
+                </div>
+              </div>
+            </div>
+            
+            <!-- Right: Timeline tracking visualizer -->
+            <div class="split-right">
+              <div class="card" style="height: 100%;">
+                <div class="card-header">
+                  <h3 style="font-weight: 700; font-size: 1rem;">Typical Investigation Timeline Dossier</h3>
+                </div>
+                <div style="display: flex; flex-direction: column; gap: 1.5rem; margin-top: 1rem; border-left: 2px solid var(--border-color); padding-left: 1.5rem; position: relative;" id="investigationTimeline">
+                  <!-- Timeline Points -->
+                  <div style="position: relative;">
+                    <div style="position: absolute; left: -29px; top: 0px; background-color: var(--accent-color); color: white; width: 10px; height: 10px; border-radius: 50%;"></div>
+                    <span style="font-size: 0.75rem; color: var(--text-muted); font-weight: 700; display: block;">STEP 1 (Day 1)</span>
+                    <strong style="font-size: 0.85rem; display: block;">FIR Registration & Scene Log</strong>
+                    <span style="font-size: 0.8rem; color: var(--text-secondary);">Incident details logged. Coordinates and MO recorded.</span>
+                  </div>
+                  <div style="position: relative;">
+                    <div style="position: absolute; left: -29px; top: 0px; background-color: var(--accent-color); color: white; width: 10px; height: 10px; border-radius: 50%;"></div>
+                    <span style="font-size: 0.75rem; color: var(--text-muted); font-weight: 700; display: block;">STEP 2 (Day 3)</span>
+                    <strong style="font-size: 0.85rem; display: block;">MO Lead Match query</strong>
+                    <span style="font-size: 0.8rem; color: var(--text-secondary);">Query historical MO database. Retrieve suspect profiles.</span>
+                  </div>
+                  <div style="position: relative;">
+                    <div style="position: absolute; left: -29px; top: 0px; background-color: var(--accent-color); color: white; width: 10px; height: 10px; border-radius: 50%;"></div>
+                    <span style="font-size: 0.75rem; color: var(--text-muted); font-weight: 700; display: block;">STEP 3 (Day 5)</span>
+                    <strong style="font-size: 0.85rem; display: block;">Digital Asset Tracking (UPI/Calls)</strong>
+                    <span style="font-size: 0.8rem; color: var(--text-secondary);">Map financial networks, UPI flows, and cell tower dumps.</span>
+                  </div>
+                  <div style="position: relative;">
+                    <div style="position: absolute; left: -29px; top: 0px; background-color: var(--accent-color); color: white; width: 10px; height: 10px; border-radius: 50%;"></div>
+                    <span style="font-size: 0.75rem; color: var(--text-muted); font-weight: 700; display: block;">STEP 4 (Day 7)</span>
+                    <strong style="font-size: 0.85rem; display: block;">Interstate Checkpoints Broadcast</strong>
+                    <span style="font-size: 0.8rem; color: var(--text-secondary);">Issue border alerts to Tamil Nadu, Kerala, and Maharashtra.</span>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </section>
+
+        <!-- SECTION 6.5: VICTIM RECORDS -->
+        <section id="sectionVictims" class="view-section" style="display: none;">
+          <div class="card">
+            <div class="card-header">
+              <h3 style="font-weight:700; font-size:1rem;">🫂 Victim & Complainant Database</h3>
+              <span class="live-badge"><span class="live-dot"></span> 5 Registered Victims</span>
+            </div>
+            <p style="font-size:0.8rem; color:var(--text-secondary); margin-bottom:1rem;">
+              Registered victim profiles, linked FIR cases, suspect associations, and vulnerability assessments.
+              Used for repeat-targeting detection and victim support prioritization.
+            </p>
+            <!-- Summary KPI Row -->
+            <div style="display:grid; grid-template-columns:repeat(4,1fr); gap:1rem; margin-bottom:1.5rem;" id="victimKpiRow">
+              <!-- Populated by JS -->
+            </div>
+            <!-- Victim Cards -->
+            <div style="display:flex; flex-direction:column; gap:1rem;" id="victimCardsList">
+              <!-- Populated by JS -->
+            </div>
+          </div>
+        </section>
+
+        <!-- SECTION 7: PREDICTIVE RISK -->
+        <section id="sectionPredict" class="view-section" style="display: none;">
+          <div class="kpi-grid">
+            <div class="card" style="border-top: 4px solid var(--error-color);">
+              <div class="card-header">
+                <span class="card-title">Critical Hotspot Forecast</span>
+              </div>
+              <div class="card-value">Majestic Area</div>
+              <span class="card-trend trend-down">78% Snatching likelihood</span>
+            </div>
+            
+            <div class="card" style="border-top: 4px solid var(--warning-color);">
+              <div class="card-header">
+                <span class="card-title">Recidivism Repeat Risk</span>
+              </div>
+              <div class="card-value">Ravi Kumar</div>
+              <span class="card-trend trend-down">85% Risk Indicator index</span>
+            </div>
+            
+            <div class="card" style="border-top: 4px solid var(--accent-color);">
+              <div class="card-header">
+                <span class="card-title">Peak Crime Incident Time</span>
+              </div>
+              <div class="card-value">22:00 - 02:00</div>
+              <span class="card-trend" style="background-color: var(--border-color); color: var(--text-secondary); border: 1px solid var(--border-color);">
+                Night patrols advised
+              </span>
+            </div>
+          </div>
+          
+          <div class="dashboard-split">
+            <div class="split-left" style="flex-grow: 1;">
+              <div class="card">
+                <div class="card-header">
+                  <h3 style="font-weight: 700; font-size: 1rem;">Early Warning Risk Index by District</h3>
+                </div>
+                <div id="chartPredictiveHeat" class="chart-container"></div>
+              </div>
+            </div>
+            
+            <div class="split-right">
+              <div class="card" style="height: 100%;">
+                <div class="card-header">
+                  <h3 style="font-weight: 700; font-size: 1rem;">Alert Actions</h3>
+                </div>
+                <div style="display: flex; flex-direction: column; gap: 1rem;">
+                  <div style="background-color: var(--error-bg); border: 1px solid var(--error-border); border-radius: 8px; padding: 1rem;">
+                    <strong style="color: var(--error-color); font-size: 0.85rem; display: block; margin-bottom: 0.25rem;">ALERT: Majestic Snatching</strong>
+                    <span style="font-size: 0.8rem; color: var(--text-secondary); display: block;">Temporal forecast matches high historic pattern values. Recommend immediately sending extra security shifts.</span>
+                  </div>
+                  <div style="background-color: var(--warning-bg); border: 1px solid var(--warning-border); border-radius: 8px; padding: 1rem;">
+                    <strong style="color: var(--warning-color); font-size: 0.85rem; display: block; margin-bottom: 0.25rem;">ALERT: Mysuru Drug drops</strong>
+                    <span style="font-size: 0.8rem; color: var(--text-secondary); display: block;">Recurrent suspect locations coordinate match found. Increased vigilance near educational facilities is highly advised.</span>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </section>
+
+        <!-- SECTION 8.5: CASE STORYBOARD MIND-MAP -->
+        <section id="sectionStoryboard" class="view-section" style="display: none;">
+          <div class="storyboard-toolbar">
+            <span style="font-weight:600; font-size:0.85rem;">Case Mind-Map Board</span>
+            <button class="btn btn-secondary" id="btnAddSuspectNode"><i data-lucide="user-x"></i> Add Suspect</button>
+            <button class="btn btn-secondary" id="btnAddUpiNode"><i data-lucide="credit-card"></i> Add UPI Flow</button>
+            <button class="btn btn-secondary" id="btnAddFirNode"><i data-lucide="file-text"></i> Add FIR</button>
+            <button class="btn btn-secondary" id="btnAddLocationNode"><i data-lucide="map-pin"></i> Add Location</button>
+            <button class="btn btn-danger" id="btnClearBoard" style="margin-left:auto;"><i data-lucide="trash-2"></i> Clear</button>
+          </div>
+          <p style="font-size:0.8rem; color:var(--text-muted); margin-bottom:1rem;">Click any Add button to place a node. Drag nodes to arrange. Lines connect related items automatically.</p>
+          <div class="storyboard-canvas" id="storyboardCanvas">
+            <svg class="storyboard-svg" id="storyboardSvg"></svg>
+            <!-- Nodes are injected here dynamically -->
+          </div>
+        </section>
+
+        <!-- SECTION 9: AUDIT LOGS -->
+        <section id="sectionAudit" class="view-section" style="display: none;">
+          <div class="card">
+            <div class="card-header">
+              <h3 style="font-weight: 700; font-size: 1rem;">System Logs & Execution History</h3>
+            </div>
+            <div class="table-container">
+              <table class="custom-table">
+                <thead>
+                  <tr>
+                    <th>Timestamp</th>
+                    <th>Access Role</th>
+                    <th>Action</th>
+                    <th>Details</th>
+                    <th>Database Execution Query</th>
+                  </tr>
+                </thead>
+                <tbody id="tableAuditLogsBody">
+                  <!-- Dynamic Logs -->
+                </tbody>
+              </table>
+            </div>
+          </div>
+        </section>
+
+      </main>
+      
+    </div>
+  </div>
+
+  <!-- Waveform Voice Visualizer Overlay -->
+  <div class="waveform-overlay" id="waveformOverlay">
+    <div class="waveform-bars">
+      <div class="wave-bar"></div><div class="wave-bar"></div><div class="wave-bar"></div>
+      <div class="wave-bar"></div><div class="wave-bar"></div><div class="wave-bar"></div>
+      <div class="wave-bar"></div><div class="wave-bar"></div><div class="wave-bar"></div>
+      <div class="wave-bar"></div><div class="wave-bar"></div>
+    </div>
+    <div class="waveform-label" id="waveformLabel">Listening... speak now</div>
+  </div>
+
+  <!-- Dossier Detail Panel Overlay (FIR Details) -->
+  <div id="firOverlay" class="detail-overlay">
+    <div class="detail-header">
+      <h3 style="font-weight: 700; font-size: 1.1rem;" id="firOverlayTitle">FIR Dossier File</h3>
+      <button class="btn-icon" id="btnCloseFirOverlay" style="border: none; width: 32px; height: 32px;">
+        <i data-lucide="x" style="width: 20px; height: 20px;"></i>
+      </button>
+    </div>
+    <div class="detail-body" id="firOverlayBody">
+      <!-- Generated Dynamically -->
+    </div>
+  </div>
+
+  <!-- Dossier Detail Panel Overlay (Suspect Details) -->
+  <div id="suspectOverlay" class="detail-overlay">
+    <div class="detail-header">
+      <h3 style="font-weight: 700; font-size: 1.1rem;">Suspect dossier file</h3>
+      <button class="btn-icon" id="btnCloseSuspectOverlay" style="border: none; width: 32px; height: 32px;">
+        <i data-lucide="x" style="width: 20px; height: 20px;"></i>
+      </button>
+    </div>
+    <div class="detail-body" id="suspectOverlayBody">
+      <!-- Generated Dynamically -->
+    </div>
+  </div>
+
+  <script src="/static/app.js"></script>
+</body>
+</html>
