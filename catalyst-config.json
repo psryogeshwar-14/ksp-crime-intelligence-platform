@@ -1,0 +1,10 @@
+{
+  "deployment": {
+    "name": "ksp_api",
+    "stack": "python3.9",
+    "type": "io"
+  },
+  "execution": {
+    "main": "index.py"
+  }
+}
