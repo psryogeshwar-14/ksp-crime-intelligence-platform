@@ -1256,10 +1256,206 @@ document.addEventListener("DOMContentLoaded", () => {
     lucide.createIcons();
   });
 
+  // --- Translation Dictionary & Interface Localization ---
+  function translateUI(lang) {
+    const tabTitles = {
+      EN: {
+        sectionDashboard: "Dashboard",
+        sectionChat: "Conversational AI",
+        sectionMap: "Hotspot Map",
+        sectionNetwork: "Criminal Network",
+        sectionFinancial: "UPI Money Trails",
+        sectionDecision: "MO Lead Matcher",
+        sectionVictims: "Victim Records",
+        sectionStoryboard: "Case Storyboard",
+        sectionPredict: "Predictive Risk",
+        sectionAudit: "Audit Logs"
+      },
+      KN: {
+        sectionDashboard: "ಡ್ಯಾಶ್‌ಬೋರ್ಡ್",
+        sectionChat: "ಸಂಭಾಷಣಾ AI",
+        sectionMap: "ಅಪರಾಧ ನಕ್ಷೆ",
+        sectionNetwork: "ಕ್ರಿಮಿನಲ್ ಜಾಲ",
+        sectionFinancial: "ಯುಪಿಐ ಹಣಕಾಸು ಜಾಲ",
+        sectionDecision: "ಅಪರಾಧ ಶೈಲಿ ಶೋಧಕ",
+        sectionVictims: "ಸಂತ್ರಸ್ತರ ದಾಖಲೆಗಳು",
+        sectionStoryboard: "ಪ್ರಕರಣದ ಕಥಾ ಫಲಕ",
+        sectionPredict: "ಮುನ್ಸೂಚನಾ ಅಪಾಯ",
+        sectionAudit: "ಆಡಿಟ್ ದಾಖಲೆಗಳು"
+      }
+    };
+
+    // 1. Page Title
+    if (el.pageTitle && tabTitles[lang][appState.activeTab]) {
+      el.pageTitle.textContent = tabTitles[lang][appState.activeTab];
+    }
+
+    // 2. Sidebar Navigation Items
+    document.querySelectorAll(".nav-item").forEach(item => {
+      const target = item.getAttribute("data-target");
+      const label = item.querySelector("span");
+      if (label && tabTitles[lang][target]) {
+        label.textContent = tabTitles[lang][target];
+      }
+    });
+
+    // 3. Dashboard KPI Card Titles
+    const kpiTitles = {
+      EN: ["Total Active FIRs", "Investigation Solved Rate", "Monitored Suspects", "Interstate alerts"],
+      KN: ["ಒಟ್ಟು ಸಕ್ರಿಯ ಎಫ್‌ಐಆರ್‌ಗಳು", "ತನಿಖೆ ಪರಿಹರಿಸಲಾದ ದರ", "ಮೇಲ್ವಿಚಾರಣೆಯಲ್ಲಿರುವ ಶಂಕಿತರು", "ಅಂತರರಾಜ್ಯ ಎಚ್ಚರಿಕೆಗಳು"]
+    };
+    document.querySelectorAll("#sectionDashboard .card-title").forEach((titleSpan, idx) => {
+      if (kpiTitles[lang][idx]) {
+        titleSpan.textContent = kpiTitles[lang][idx];
+      }
+    });
+
+    // 4. Dashboard Chart Titles
+    const trendTitle = document.getElementById("dashboardTrendTitle");
+    if (trendTitle) {
+      trendTitle.textContent = lang === "KN" ? "ಮಾಸಿಕ ಅಪರಾಧ ವಿತರಣಾ ಪ್ರವೃತ್ತಿ" : "KSP Monthly Crime Distribution Trend";
+    }
+    const ratioTitle = document.getElementById("dashboardRatioTitle");
+    if (ratioTitle) {
+      ratioTitle.textContent = lang === "KN" ? "ಅಪರಾಧ ಪ್ರಕಾರದ ಅನುಪಾತಗಳು" : "Crime Ratios";
+    }
+
+    // 5. Conversational AI Chat Elements
+    const chatHeader = document.querySelector("#sectionChat .card-header h3");
+    if (chatHeader) {
+      chatHeader.innerHTML = lang === "KN" 
+        ? `<i data-lucide="terminal"></i> ವಿವರಣಾತ್ಮಕ ಅಪರಾಧ ತನಿಖಾ AI ಜಾಲ` 
+        : `<i data-lucide="terminal"></i> Explainable AI Audit Inspector`;
+    }
+    const chatDesc = document.querySelector("#sectionChat .card-header p");
+    if (chatDesc) {
+      chatDesc.textContent = lang === "KN"
+        ? "ಇಂಟರ್ಫೇಸ್ ಸಿಸ್ಟಮ್ ತಾರ್ಕಿಕ ಹಂತಗಳು ಮತ್ತು ರಚಿಸಲಾದ ಡೇಟಾಬೇಸ್ ಕ್ವೆರಿಗಳನ್ನು ಪ್ರದರ್ಶಿಸುತ್ತದೆ."
+        : "Displays query execution details, underlying system reasoning steps, and generated queries.";
+    }
+    const labelSql = document.querySelector("#sectionChat label:first-of-type");
+    if (labelSql) {
+      labelSql.textContent = lang === "KN" ? "ರಚಿಸಲಾದ ಡೇಟಾಬೇಸ್ ಕ್ವೆರಿ (SQL)" : "Generated Relational Database Query (SQL)";
+    }
+    const labelReasoning = document.querySelector("#sectionChat label:last-of-type");
+    if (labelReasoning) {
+      labelReasoning.textContent = lang === "KN" ? "ಸಿಸ್ಟಮ್ ತಾರ್ಕಿಕ ಲಾಗ್‌ಗಳ ಹರಿವು" : "System Reasoning Stream Logs";
+    }
+    if (el.chatInput) {
+      el.chatInput.placeholder = lang === "KN"
+        ? "ಅಪರಾಧಗಳು, ಶಂಕಿತರು ಅಥವಾ ಹಣದ ಜಾಲದ ಬಗ್ಗೆ ಕೇಳಿ..."
+        : "Query crime database or suspect profiles...";
+    }
+
+    // 6. Map Section Elements
+    const mapControl = document.getElementById("mapControlTitle");
+    if (mapControl) mapControl.textContent = lang === "KN" ? "ಭೌಗೋಳಿಕ ನಿಯಂತ್ರಣಗಳು" : "Geospatial Controls";
+    const mapLabelDist = document.getElementById("mapLabelDistrict");
+    if (mapLabelDist) mapLabelDist.textContent = lang === "KN" ? "ಜಿಲ್ಲೆಯನ್ನು ಆರಿಸಿ" : "Select District";
+    const mapOptAllD = document.getElementById("mapOptAllDistricts");
+    if (mapOptAllD) mapOptAllD.textContent = lang === "KN" ? "ಎಲ್ಲಾ ಕರ್ನಾಟಕ ಜಿಲ್ಲೆಗಳು" : "All Karnataka Districts";
+    const mapLabelCat = document.getElementById("mapLabelCategory");
+    if (mapLabelCat) mapLabelCat.textContent = lang === "KN" ? "ಅಪರಾಧ ಪ್ರಕಾರ" : "Crime Category";
+    const mapOptAllC = document.getElementById("mapOptAllCategories");
+    if (mapOptAllC) mapOptAllC.textContent = lang === "KN" ? "ಎಲ್ಲಾ ಅಪರಾಧ ಪ್ರಕಾರಗಳು" : "All Crime Categories";
+    const mapLabelPres = document.getElementById("mapLabelPresentation");
+    if (mapLabelPres) mapLabelPres.textContent = lang === "KN" ? "ನಕ್ಷೆಯ ಪ್ರಸ್ತುತಿ ಶೈಲಿ" : "Visual Presentation";
+    const mapOptMark = document.getElementById("mapOptMarkers");
+    if (mapOptMark) mapOptMark.textContent = lang === "KN" ? "ಅಪರಾಧ ಪಿನ್ ಮಾರ್ಕರ್‌ಗಳು" : "Incident Pin Markers";
+    const mapOptHt = document.getElementById("mapOptHeat");
+    if (mapOptHt) mapOptHt.textContent = lang === "KN" ? "ಅಪರಾಧ ಸಾಂದ್ರತೆಯ ಬಲಯಗಳು" : "Hotspot Density Clusters (HeatCircles)";
+    const mapMetricTitle = document.getElementById("mapMetricsTitle");
+    if (mapMetricTitle) mapMetricTitle.textContent = lang === "KN" ? "ಜಿಲ್ಲಾವಾರು ಅಪರಾಧ ಅಂಕಿಅಂಶಗಳು" : "District Summary Metrics";
+
+    // 7. MO Matcher Elements
+    const moHeader = document.querySelector("#sectionDecision .card-header h3");
+    if (moHeader) {
+      moHeader.textContent = lang === "KN" ? "ಅಪರಾಧ ಶೈಲಿ (MO) ಲೀಡ್ ಶೋಧಕ" : "Modus Operandi (MO) Lead Matcher";
+    }
+    const moDesc = document.querySelector("#sectionDecision .card-header p");
+    if (moDesc) {
+      moDesc.textContent = lang === "KN"
+        ? "ಅಪರಾಧಗಳ ಶೈಲಿಯನ್ನು ನಮೂದಿಸಿ ಮತ್ತು ತಾಳೆಯಾಗುವ ಶಂಕಿತರ ವಿವರಗಳನ್ನು ಪರಿಶೀಲಿಸಿ."
+        : "Enter MO narratives of active crimes to query historical dossiers and identify matching suspects.";
+    }
+    const moLabelNode = document.querySelector("#sectionDecision label");
+    if (moLabelNode) {
+      moLabelNode.textContent = lang === "KN"
+        ? "ಅಪರಾಧ ಶೈಲಿಯ ವಿವರಗಳು (ಬೀಗ ಒಡೆಯುವುದು, ಹಗಲು ಕಳ್ಳತನ ಇತ್ಯಾದಿ)"
+        : "Modus Operandi Details (e.g. key tools, techniques, target assets)";
+    }
+    if (el.moQueryInput) {
+      el.moQueryInput.placeholder = lang === "KN"
+        ? "ಉದಾಹರಣೆಗೆ: ಬೀಗ ಒಡೆಯುವುದು, ಹಗಲು ಕಳ್ಳತನ..."
+        : "e.g. lock break, daytime house theft, gold snatching...";
+    }
+    if (el.btnMatchMo) {
+      el.btnMatchMo.innerHTML = lang === "KN"
+        ? `<i data-lucide="search"></i> ಶೋಧಿಸಿ ಮತ್ತು ಲೀಡ್ಸ್ ರಚಿಸಿ`
+        : `<i data-lucide="search"></i> Match MO & Generate Leads`;
+    }
+    const timelineH3 = document.querySelector("#sectionDecision .split-right h3");
+    if (timelineH3) {
+      timelineH3.textContent = lang === "KN" ? "ಸಾಮಾನ್ಯ ತನಿಖಾ ಸಮಯದ ಪ್ರಗತಿ ವಿವರ" : "Typical Investigation Timeline Dossier";
+    }
+    const timelineSteps = document.querySelectorAll("#investigationTimeline > div");
+    const stepTitles = {
+      EN: [
+        { step: "STEP 1 (Day 1)", title: "FIR Registration & Scene Log", desc: "Incident details logged. Coordinates and MO recorded." },
+        { step: "STEP 2 (Day 3)", title: "MO Lead Match query", desc: "Query historical MO database. Retrieve suspect profiles." },
+        { step: "STEP 3 (Day 5)", title: "Digital Asset Tracking (UPI/Calls)", desc: "Map financial networks, UPI flows, and cell tower dumps." },
+        { step: "STEP 4 (Day 7)", title: "Interstate Checkpoints Broadcast", desc: "Issue border alerts to Tamil Nadu, Kerala, and Maharashtra." }
+      ],
+      KN: [
+        { step: "ಹಂತ 1 (ದಿನ 1)", title: "ಎಫ್‌ಐಆರ್ ನೋಂದಣಿ ಮತ್ತು ಸ್ಥಳ ವಿವರ", desc: "ಅಪರಾಧದ ವಿವರಗಳನ್ನು ದಾಖಲಿಸಲಾಗುತ್ತದೆ." },
+        { step: "ಹಂತ 2 (ದಿನ 3)", title: "ಅಪರಾಧ ಶೈಲಿ ಶೋಧನೆ", desc: "ಹಳೆಯ ಪ್ರಕರಣಗಳ ಜಾಲವನ್ನು ಪರಿಶೀಲಿಸಲಾಗುತ್ತದೆ." },
+        { step: "ಹಂತ 3 (ದಿನ 5)", title: "ಡಿಜಿಟಲ್ ಆಸ್ತಿ ಟ್ರ್ಯಾಕಿಂಗ್ (UPI/ಕರೆಗಳು)", desc: "ಹಣದ ಹರಿವು ಮತ್ತು ಟವರ್ ಲೊಕೇಶನ್ ಪರಿಶೀಲನೆ." },
+        { step: "ಹಂತ 4 (ದಿನ 7)", title: "ಅಂತರರಾಜ್ಯ ಚೆಕ್‌ಪೋಸ್ಟ್ ಪ್ರಸಾರ", desc: "ತಮಿಳುನಾಡು, ಕೇರಳ ಮತ್ತು ಮಹಾರಾಷ್ಟ್ರ ಗಡಿಗಳಿಗೆ ಸೂಚನೆ." }
+      ]
+    };
+    timelineSteps.forEach((stepDiv, idx) => {
+      const data = stepTitles[lang][idx];
+      if (data && stepDiv) {
+        const stepSpan = stepDiv.querySelector("span");
+        const titleStrong = stepDiv.querySelector("strong");
+        const descSpan = stepDiv.querySelector("span:last-child");
+        if (stepSpan) stepSpan.textContent = data.step;
+        if (titleStrong) titleStrong.textContent = data.title;
+        if (descSpan) descSpan.textContent = data.desc;
+      }
+    });
+
+    // 8. Storyboard Title
+    const storyboardBar = document.querySelector("#sectionStoryboard .storyboard-toolbar span");
+    if (storyboardBar) {
+      storyboardBar.textContent = lang === "KN" ? "ಪ್ರಕರಣದ ಮೈಂಡ್-ಮ್ಯಾಪ್ ಬೋರ್ಡ್" : "Case Mind-Map Board";
+    }
+    const storyboardP = document.querySelector("#sectionStoryboard p");
+    if (storyboardP) {
+      storyboardP.textContent = lang === "KN"
+        ? "ನೋಡ್ ಸೇರಿಸಲು ಕ್ಲಿಕ್ ಮಾಡಿ. ಡ್ರ್ಯಾಗ್ ಮಾಡಿ ಜೋಡಿಸಿ. ಸ್ವಯಂಚಾಲಿತವಾಗಿ ಕನೆಕ್ಟ್ ಆಗುತ್ತದೆ."
+        : "Click any Add button to place a node. Drag nodes to arrange. Lines connect related items automatically.";
+    }
+
+    // 9. Export PDF Button Text
+    const pdfBtnSpan = document.querySelector("#btnPDFExport span");
+    if (pdfBtnSpan) {
+      pdfBtnSpan.textContent = lang === "KN" ? "ವರದಿ ಡೌನ್‌ಲೋಡ್ (PDF)" : "Export Investigation PDF";
+    }
+
+    // Trigger charts redraw if active tab
+    if (appState.activeTab === "sectionDashboard") {
+      setTimeout(initDashboardCharts, 100);
+    }
+
+    lucide.createIcons();
+  }
+
   el.btnLangEn.addEventListener("click", () => {
     appState.lang = "EN";
     el.btnLangEn.classList.add("active");
     el.btnLangKn.classList.remove("active");
+    translateUI("EN");
     addChatBubble("model", "Language switched to English. How can I assist you today?");
   });
 
@@ -1267,6 +1463,7 @@ document.addEventListener("DOMContentLoaded", () => {
     appState.lang = "KN";
     el.btnLangKn.classList.add("active");
     el.btnLangEn.classList.remove("active");
+    translateUI("KN");
     addChatBubble("model", "ಕನ್ನಡ ಭಾಷೆಗೆ ಬದಲಾಯಿಸಲಾಗಿದೆ. ನಾನು ನಿಮಗೆ ಹೇಗೆ ಸಹಾಯ ಮಾಡಲಿ?");
   });
 

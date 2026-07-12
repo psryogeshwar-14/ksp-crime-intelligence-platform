@@ -225,7 +225,7 @@
             <div class="split-left">
               <div class="card" style="flex-grow: 1;">
                 <div class="card-header">
-                  <h3 style="font-weight: 700; font-size: 1rem;">KSP Monthly Crime Distribution Trend</h3>
+                  <h3 id="dashboardTrendTitle" style="font-weight: 700; font-size: 1rem;">KSP Monthly Crime Distribution Trend</h3>
                 </div>
                 <div id="chartCrimeTrends" class="chart-container"></div>
               </div>
@@ -235,7 +235,7 @@
             <div class="split-right">
               <div class="card" style="height: 100%;">
                 <div class="card-header">
-                  <h3 style="font-weight: 700; font-size: 1rem;">Crime Ratios</h3>
+                  <h3 id="dashboardRatioTitle" style="font-weight: 700; font-size: 1rem;">Crime Ratios</h3>
                 </div>
                 <div id="chartCrimeCategories" style="height: 400px; width: 100%;"></div>
               </div>
@@ -373,12 +373,12 @@
             <!-- Right: Map filter panel -->
             <div class="split-right" style="height: 100%;">
               <div class="card" style="height: 100%; gap: 1.25rem;">
-                <h3 style="font-weight: 700; font-size: 1rem;">Geospatial Controls</h3>
+                <h3 id="mapControlTitle" style="font-weight: 700; font-size: 1rem;">Geospatial Controls</h3>
                 
                 <div class="form-group">
-                  <label for="mapFilterDistrict">Select District</label>
+                  <label id="mapLabelDistrict" for="mapFilterDistrict">Select District</label>
                   <select id="mapFilterDistrict" class="form-control">
-                    <option value="">All Karnataka Districts</option>
+                    <option value="" id="mapOptAllDistricts">All Karnataka Districts</option>
                     <option value="Bengaluru City">Bengaluru City</option>
                     <option value="Mysuru">Mysuru</option>
                     <option value="Hubli-Dharwad">Hubli-Dharwad</option>
@@ -387,9 +387,9 @@
                 </div>
                 
                 <div class="form-group">
-                  <label for="mapFilterType">Crime Category</label>
+                  <label id="mapLabelCategory" for="mapFilterType">Crime Category</label>
                   <select id="mapFilterType" class="form-control">
-                    <option value="">All Crime Categories</option>
+                    <option value="" id="mapOptAllCategories">All Crime Categories</option>
                     <option value="Cybercrime">Cybercrime</option>
                     <option value="Theft">Theft</option>
                     <option value="Assault">Assault</option>
@@ -398,15 +398,15 @@
                 </div>
                 
                 <div class="form-group">
-                  <label for="mapDensityToggle">Visual Presentation</label>
+                  <label id="mapLabelPresentation" for="mapDensityToggle">Visual Presentation</label>
                   <select id="mapDensityToggle" class="form-control">
-                    <option value="markers">Incident Pin Markers</option>
-                    <option value="heat">Hotspot Density Clusters (HeatCircles)</option>
+                    <option value="markers" id="mapOptMarkers">Incident Pin Markers</option>
+                    <option value="heat" id="mapOptHeat">Hotspot Density Clusters (HeatCircles)</option>
                   </select>
                 </div>
                 
                 <div style="flex-grow: 1; border-top: 1px solid var(--border-color); padding-top: 1rem; overflow-y: auto;">
-                  <h4 style="font-size: 0.825rem; font-weight: 700; text-transform: uppercase; color: var(--text-secondary); margin-bottom: 0.5rem;">District Summary Metrics</h4>
+                  <h4 id="mapMetricsTitle" style="font-size: 0.825rem; font-weight: 700; text-transform: uppercase; color: var(--text-secondary); margin-bottom: 0.5rem;">District Summary Metrics</h4>
                   <div id="mapDistrictMetrics" style="display: flex; flex-direction: column; gap: 0.75rem; font-size: 0.85rem;">
                     <!-- Populated dynamically -->
                   </div>
