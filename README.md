@@ -1,4 +1,4 @@
-# KSP Crime Intelligence Platform — Datathon 2026
+# Intelligent Conversational AI for KSP Crime Database
 
 <div align="center">
 
@@ -7,9 +7,9 @@
 ![FastAPI](https://img.shields.io/badge/FastAPI-0.115%2B-teal?style=for-the-badge&logo=fastapi)
 ![License](https://img.shields.io/badge/License-MIT-yellow?style=for-the-badge)
 
-**An Intelligent Conversational AI & Crime Analytics Platform for Karnataka State Police**
+**An Intelligent Conversational AI & Crime Analytics Workstation for Karnataka State Police**
 
-*Challenge 01 — Datathon 2026 | Karnataka State Police (KSP)*
+*Challenge 01 — Intelligent Conversational AI for KSP Crime Database | KSP Datathon 2026*
 
 </div>
 

@@ -4,10 +4,10 @@ Use this slide outline to quickly create your PowerPoint/Google Slides presentat
 ---
 
 ## Slide 1: Title Slide
-* **Title:** KSP Intelligent Conversational AI & Crime Analytics Platform
+* **Title:** Intelligent Conversational AI for KSP Crime Database
 * **Subtitle:** Revolutionizing SCRB Investigations through Natural Language & Link Analysis
 * **Team Name:** [Your Team Name]
-* **Competition:** KSP Datathon 2026 — Challenge 01
+* **Competition:** KSP Datathon 2026 — Challenge 01 (Intelligent Conversational AI for KSP Crime Database)
 
 ---
 
